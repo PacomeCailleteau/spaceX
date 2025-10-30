@@ -18,7 +18,7 @@ class LaunchDetailPage extends StatelessWidget {
         actions: [
           BlocBuilder<FavoritesCubit, FavoritesState>(
             builder: (context, state) {
-              final isFavorite = state.favoriteLaunches.contains(launch.id);
+              final isFavorite = state.favoriteIds.contains(launch.id);
               return IconButton(
                 icon: Icon(
                   isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -57,7 +57,8 @@ class LaunchDetailPage extends StatelessWidget {
             const SizedBox(height: 16),
             Text('Mission Outcome', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            Text(launch.success == true ? 'Success' : 'Failure'),
+            if (launch.success != null)
+              Text(launch.success! ? 'Success' : 'Failure'),
             if (launch.failures != null && launch.failures!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),

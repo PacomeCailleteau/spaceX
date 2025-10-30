@@ -30,19 +30,21 @@ class LaunchListItem extends StatelessWidget {
           children: [
             BlocBuilder<FavoritesCubit, FavoritesState>(
               builder: (context, state) {
-                final isFavorite = state.favoriteLaunches.contains(launch.id);
+                final isFavorite = state.favoriteIds.contains(launch.id);
                 return IconButton(
                   icon: Icon(
                     isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : Colors.grey,
+                    color: isFavorite ? Colors.red : null,
                   ),
                   onPressed: () => context.read<FavoritesCubit>().toggleFavorite(launch.id),
                 );
               },
             ),
-            launch.success == true
-                ? const Icon(Icons.check_circle, color: Colors.green)
-                : const Icon(Icons.cancel, color: Colors.red),
+            if (launch.success != null)
+              Icon(
+                launch.success! ? Icons.check_circle : Icons.cancel,
+                color: launch.success! ? Colors.green : Colors.red,
+              ),
           ],
         ),
       ),

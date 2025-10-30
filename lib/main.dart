@@ -26,14 +26,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Instantiate services once
+    final launchService = LaunchService();
+    final favoriteService = FavoriteService();
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => ThemeCubit()),
         BlocProvider(
-          create: (context) => LaunchesCubit(launchService: LaunchService())..fetchLaunches(),
+          create: (context) => LaunchesCubit(launchService: launchService),
         ),
         BlocProvider(
-          create: (context) => FavoritesCubit(favoriteService: FavoriteService())..loadFavorites(),
+          create: (context) => FavoritesCubit(
+            favoriteService: favoriteService,
+            launchService: launchService,
+          )..loadFavorites(),
         ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(

@@ -19,11 +19,14 @@ class LaunchGridItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
-                child: CachedNetworkImage(
-                  imageUrl: launch.patch?.small ?? '',
-                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                  errorWidget: (context, url, error) => const Icon(Icons.rocket_launch),
-                  fit: BoxFit.contain,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CachedNetworkImage(
+                    imageUrl: launch.patch?.small ?? '',
+                    placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) => const Icon(Icons.rocket_launch),
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               Padding(
@@ -42,16 +45,16 @@ class LaunchGridItem extends StatelessWidget {
             right: 0,
             child: BlocBuilder<FavoritesCubit, FavoritesState>(
               builder: (context, state) {
-                final isFavorite = state.favoriteLaunches.contains(launch.id);
+                final isFavorite = state.favoriteIds.contains(launch.id);
                 return Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8)),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor.withAlpha(200),
+                    borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8)),
                   ),
                   child: IconButton(
                     icon: Icon(
                       isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.white,
+                      color: isFavorite ? Colors.red : null,
                     ),
                     onPressed: () => context.read<FavoritesCubit>().toggleFavorite(launch.id),
                   ),
