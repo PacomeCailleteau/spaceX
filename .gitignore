@@ -1,0 +1,86 @@
+# ----------------------------------------
+# General
+# ----------------------------------------
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+*.lock
+
+# ----------------------------------------
+# IDEs and editors
+# ----------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+out/
+gen/
+.gradle/
+.project
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# ----------------------------------------
+# Flutter & Dart
+# ----------------------------------------
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.dart_tool/
+.build/
+.flutter-plugins
+flutter_*.log
+app_inspect_api_key.json
+
+# ----------------------------------------
+# Flutter generated files
+# ----------------------------------------
+.metadata
+build/
+coverage/
+pubspec.lock
+
+# ----------------------------------------
+# Android
+# ----------------------------------------
+android/.gradle/
+android/local.properties
+android/key.properties
+android/app/build/
+android/app/release/
+android/app/profile/
+android/app/debug/
+android/app/src/main/assets/flutter_assets/
+
+# ----------------------------------------
+# iOS
+# ----------------------------------------
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Runner/GeneratedPluginRegistrant.*
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/
+ios/Runner.xcodeproj/xcuserdata/
+DerivedData/
+*.xcuserstate
+
+# ----------------------------------------
+# Misc
+# ----------------------------------------
+*.zip
+*.tar.gz
+*.tmp
+*.bak
