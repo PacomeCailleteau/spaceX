@@ -44,7 +44,7 @@ final class LaunchesSuccess extends LaunchesState {
 
 final class LaunchesFailure extends LaunchesState {
   final String error;
-  final List<Launch> launches; // Keep existing launches on failure
+  final List<Launch> launches;
 
   const LaunchesFailure({required this.error, this.launches = const []});
 

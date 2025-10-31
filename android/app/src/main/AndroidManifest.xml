@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="space_x"
+        android:label="SpaceX Tracker"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

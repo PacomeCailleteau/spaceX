@@ -26,21 +26,24 @@ class OnboardingView extends StatelessWidget {
 
     final onboardingTabs = [
       const OnboardingTab(
-        title: 'Welcome to SpaceX',
-        description: 'Explore the world of SpaceX and keep track of all the latest launches.',
+        image: 'assets/icon/logo.png',
+        title: 'Welcome to SpaceX Tracker',
+        description: 'Track all past, present, and future SpaceX launches at your fingertips.',
       ),
       const OnboardingTab(
-        title: 'Launch Details',
-        description: 'Get detailed information about each launch, including the rocket, payload, and mission outcome.',
+        image: 'assets/icon/details.png',
+        title: 'In-Depth Details',
+        description: 'Get detailed information about each launch, from rocket specs to mission outcomes.',
       ),
       const OnboardingTab(
-        title: 'Favorites',
-        description: 'Add your favorite launches to a special list for quick and easy access.',
+        image: 'assets/icon/favorites.png',
+        title: 'Track Your Favorites',
+        description: 'Never miss a launch! Add upcoming missions to your favorites to keep them on your radar.',
       ),
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF000020),
+      backgroundColor: const Color(0xFF0C0C0C),
       body: PageView(
         controller: pageController,
         onPageChanged: (pageIndex) => context.read<OnboardingCubit>().changePage(pageIndex),

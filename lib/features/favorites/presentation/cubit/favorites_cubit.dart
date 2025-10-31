@@ -40,7 +40,6 @@ class FavoritesCubit extends Cubit<FavoritesState> {
       } else {
         await favoriteService.addFavorite(launchId);
       }
-      // Refresh the state after modification
       await loadFavorites();
     } catch (e) {
       emit(FavoritesFailure(e.toString()));

@@ -91,7 +91,6 @@ class _LaunchesPageState extends State<LaunchesPage> {
   void _showOptionsModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      // Provide both cubits to the modal sheet
       builder: (_) => MultiBlocProvider(
         providers: [
           BlocProvider.value(value: BlocProvider.of<ViewModeCubit>(context)),
