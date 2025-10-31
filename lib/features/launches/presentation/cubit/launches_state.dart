@@ -1,63 +1,53 @@
 part of 'launches_cubit.dart';
 
-enum LaunchStatus { initial, loading, loadingMore, success, failure }
-
-enum LaunchViewMode { list, grid }
-
-class LaunchesState extends Equatable {
-  const LaunchesState({
-    this.status = LaunchStatus.initial,
-    this.launches = const [],
-    this.viewMode = LaunchViewMode.list,
-    this.isSearching = false,
-    this.searchQuery = '',
-    this.page = 1,
-    this.hasNextPage = true,
-    this.error,
-  });
-
-  final LaunchStatus status;
-  final List<Launch> launches;
-  final LaunchViewMode viewMode;
-  final bool isSearching;
-  final String searchQuery;
-  final int page;
-  final bool hasNextPage;
-  final String? error;
+sealed class LaunchesState extends Equatable {
+  const LaunchesState();
 
   @override
-  List<Object?> get props => [
-        status,
-        launches,
-        viewMode,
-        isSearching,
-        searchQuery,
-        page,
-        hasNextPage,
-        error,
-      ];
+  List<Object?> get props => [];
+}
 
-  LaunchesState copyWith({
-    LaunchStatus? status,
+final class LaunchesInitial extends LaunchesState {}
+
+final class LaunchesLoading extends LaunchesState {}
+
+final class LaunchesLoadingMore extends LaunchesState {
+  final List<Launch> launches;
+  const LaunchesLoadingMore({required this.launches});
+
+  @override
+  List<Object?> get props => [launches];
+}
+
+final class LaunchesSuccess extends LaunchesState {
+  final List<Launch> launches;
+  final bool hasNextPage;
+
+  const LaunchesSuccess({
+    required this.launches,
+    required this.hasNextPage,
+  });
+
+  @override
+  List<Object?> get props => [launches, hasNextPage];
+
+  LaunchesSuccess copyWith({
     List<Launch>? launches,
-    LaunchViewMode? viewMode,
-    bool? isSearching,
-    String? searchQuery,
-    int? page,
     bool? hasNextPage,
-    String? error,
-    // Helper to clear error message on new actions
-    bool clearError = false,
   }) {
-    return LaunchesState(
-      status: status ?? this.status,
+    return LaunchesSuccess(
       launches: launches ?? this.launches,
-      viewMode: viewMode ?? this.viewMode,
-      isSearching: isSearching ?? this.isSearching,
-      searchQuery: searchQuery ?? this.searchQuery,
-      page: page ?? this.page,
       hasNextPage: hasNextPage ?? this.hasNextPage,
-      error: clearError ? null : error ?? this.error,
     );
   }
+}
+
+final class LaunchesFailure extends LaunchesState {
+  final String error;
+  final List<Launch> launches; // Keep existing launches on failure
+
+  const LaunchesFailure({required this.error, this.launches = const []});
+
+  @override
+  List<Object?> get props => [error, launches];
 }

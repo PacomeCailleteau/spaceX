@@ -13,43 +13,51 @@ class FavoritesPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Favorite Launches'),
       ),
-      body: BlocBuilder<FavoritesCubit, FavoritesState>(
-        builder: (context, state) {
-          final status = state.status;
-          final favoriteLaunches = state.favoriteLaunches;
-
-          if (status == FavoritesStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (status == FavoritesStatus.failure) {
-            return Center(child: Text(state.error ?? 'Failed to load favorites'));
-          }
-
-          if (favoriteLaunches.isEmpty) {
-            return const Center(
-              child: Text('You have no favorite launches yet.'),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () => context.read<FavoritesCubit>().loadFavorites(),
-            child: ListView.builder(
-              itemCount: favoriteLaunches.length,
-              itemBuilder: (context, index) {
-                final launch = favoriteLaunches[index];
-                return GestureDetector(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => LaunchDetailPage(launch: launch),
-                    ),
+      body: RefreshIndicator(
+        onRefresh: () => context.read<FavoritesCubit>().loadFavorites(),
+        child: BlocBuilder<FavoritesCubit, FavoritesState>(
+          builder: (context, state) {
+            return switch (state) {
+              FavoritesInitial() || FavoritesLoading() => const Center(child: CircularProgressIndicator()),
+              FavoritesFailure(error: final error) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(error),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context.read<FavoritesCubit>().loadFavorites(),
+                        child: const Text('Retry'),
+                      )
+                    ],
                   ),
-                  child: LaunchListItem(launch: launch),
-                );
-              },
-            ),
-          );
-        },
+                ),
+              FavoritesSuccess(favoriteLaunches: final launches) =>
+                launches.isEmpty
+                    ? LayoutBuilder(builder: (context, constraints) => SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                            child: const Center(child: Text('You have no favorite launches yet.')),
+                          ),
+                        ))
+                    : ListView.builder(
+                        itemCount: launches.length,
+                        itemBuilder: (context, index) {
+                          final launch = launches[index];
+                          return GestureDetector(
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => LaunchDetailPage(launch: launch),
+                              ),
+                            ),
+                            child: LaunchListItem(launch: launch),
+                          );
+                        },
+                      ),
+            };
+          },
+        ),
       ),
     );
   }

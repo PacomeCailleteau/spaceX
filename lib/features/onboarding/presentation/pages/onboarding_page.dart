@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:space_x/core/services/storage_service.dart';
-import 'package:space_x/features/launches/presentation/pages/launches_page.dart';
+import 'package:space_x/core/user/local_user_cubit.dart';
 import 'package:space_x/features/onboarding/presentation/cubit/onboarding_cubit.dart';
+import 'package:space_x/features/onboarding/enum/onboarding_step.dart';
 import 'package:space_x/features/onboarding/presentation/widgets/onboarding_tab.dart';
 
 class OnboardingPage extends StatelessWidget {
@@ -22,9 +22,9 @@ class OnboardingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final PageController pageController = PageController();
+    final pageController = PageController();
 
-    final List<Widget> onboardingTabs = [
+    final onboardingTabs = [
       const OnboardingTab(
         title: 'Welcome to SpaceX',
         description: 'Explore the world of SpaceX and keep track of all the latest launches.',
@@ -41,35 +41,26 @@ class OnboardingView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF000020),
-      body: BlocBuilder<OnboardingCubit, OnboardingState>(
-        builder: (context, state) {
-          return PageView(
-            controller: pageController,
-            onPageChanged: (page) => context.read<OnboardingCubit>().changePage(page),
-            children: onboardingTabs,
-          );
-        },
+      body: PageView(
+        controller: pageController,
+        onPageChanged: (pageIndex) => context.read<OnboardingCubit>().changePage(pageIndex),
+        children: onboardingTabs,
       ),
       floatingActionButton: BlocBuilder<OnboardingCubit, OnboardingState>(
         builder: (context, state) {
+          final isLastStep = state.step == OnboardingStep.favorites;
           return FloatingActionButton(
             onPressed: () {
-              if (state.page < onboardingTabs.length - 1) {
+              if (!isLastStep) {
                 pageController.nextPage(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.ease,
                 );
               } else {
-                final storageService = StorageService();
-                storageService.setOnboardingCompleted();
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const LaunchesPage(),
-                  ),
-                );
+                context.read<LocalUserCubit>().completeOnboarding();
               }
             },
-            child: Icon(state.page < onboardingTabs.length - 1 ? Icons.arrow_forward : Icons.check),
+            child: Icon(isLastStep ? Icons.check : Icons.arrow_forward),
           );
         },
       ),

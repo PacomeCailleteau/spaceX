@@ -2,19 +2,19 @@ part of 'onboarding_cubit.dart';
 
 class OnboardingState extends Equatable {
   const OnboardingState({
-    this.page = 0,
+    this.step = OnboardingStep.welcome,
   });
 
-  final int page;
+  final OnboardingStep step;
 
   @override
-  List<Object> get props => [page];
+  List<Object> get props => [step];
 
   OnboardingState copyWith({
-    int? page,
+    OnboardingStep? step,
   }) {
     return OnboardingState(
-      page: page ?? this.page,
+      step: step ?? this.step,
     );
   }
 }

@@ -10,29 +10,31 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   FavoritesCubit({
     required this.favoriteService,
     required this.launchService,
-  }) : super(const FavoritesState());
+  }) : super(FavoritesInitial());
 
   final FavoriteService favoriteService;
   final LaunchService launchService;
 
   Future<void> loadFavorites() async {
-    emit(state.copyWith(status: FavoritesStatus.loading));
+    emit(FavoritesLoading());
     try {
       final favoriteIds = await favoriteService.getFavorites();
       final favoriteLaunches = await launchService.getLaunchesByIds(favoriteIds);
-      emit(state.copyWith(
-        status: FavoritesStatus.success,
+      emit(FavoritesSuccess(
         favoriteIds: favoriteIds,
         favoriteLaunches: favoriteLaunches,
       ));
     } catch (e) {
-      emit(state.copyWith(status: FavoritesStatus.failure, error: e.toString()));
+      emit(FavoritesFailure(e.toString()));
     }
   }
 
   Future<void> toggleFavorite(String launchId) async {
     try {
-      final isFavorite = state.favoriteIds.contains(launchId);
+      final currentState = state;
+      if (currentState is! FavoritesSuccess) return;
+
+      final isFavorite = currentState.favoriteIds.contains(launchId);
       if (isFavorite) {
         await favoriteService.removeFavorite(launchId);
       } else {
@@ -41,7 +43,7 @@ class FavoritesCubit extends Cubit<FavoritesState> {
       // Refresh the state after modification
       await loadFavorites();
     } catch (e) {
-      // Handle or log error appropriately
+      emit(FavoritesFailure(e.toString()));
     }
   }
 }

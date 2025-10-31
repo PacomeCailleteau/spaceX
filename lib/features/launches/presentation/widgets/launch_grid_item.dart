@@ -45,7 +45,8 @@ class LaunchGridItem extends StatelessWidget {
             right: 0,
             child: BlocBuilder<FavoritesCubit, FavoritesState>(
               builder: (context, state) {
-                final isFavorite = state.favoriteIds.contains(launch.id);
+                final isFavorite =
+                    state is FavoritesSuccess && state.favoriteIds.contains(launch.id);
                 return Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor.withAlpha(200),

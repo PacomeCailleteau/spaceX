@@ -1,34 +1,34 @@
 part of 'favorites_cubit.dart';
 
-enum FavoritesStatus { initial, loading, success, failure }
-
-class FavoritesState extends Equatable {
-  const FavoritesState({
-    this.status = FavoritesStatus.initial,
-    this.favoriteIds = const [],
-    this.favoriteLaunches = const [],
-    this.error,
-  });
-
-  final FavoritesStatus status;
-  final List<String> favoriteIds;
-  final List<Launch> favoriteLaunches;
-  final String? error;
+sealed class FavoritesState extends Equatable {
+  const FavoritesState();
 
   @override
-  List<Object?> get props => [status, favoriteIds, favoriteLaunches, error];
+  List<Object> get props => [];
+}
 
-  FavoritesState copyWith({
-    FavoritesStatus? status,
-    List<String>? favoriteIds,
-    List<Launch>? favoriteLaunches,
-    String? error,
-  }) {
-    return FavoritesState(
-      status: status ?? this.status,
-      favoriteIds: favoriteIds ?? this.favoriteIds,
-      favoriteLaunches: favoriteLaunches ?? this.favoriteLaunches,
-      error: error ?? this.error,
-    );
-  }
+final class FavoritesInitial extends FavoritesState {}
+
+final class FavoritesLoading extends FavoritesState {}
+
+final class FavoritesSuccess extends FavoritesState {
+  final List<String> favoriteIds;
+  final List<Launch> favoriteLaunches;
+
+  const FavoritesSuccess({
+    this.favoriteIds = const [],
+    this.favoriteLaunches = const [],
+  });
+
+  @override
+  List<Object> get props => [favoriteIds, favoriteLaunches];
+}
+
+final class FavoritesFailure extends FavoritesState {
+  final String error;
+
+  const FavoritesFailure(this.error);
+
+  @override
+  List<Object> get props => [error];
 }

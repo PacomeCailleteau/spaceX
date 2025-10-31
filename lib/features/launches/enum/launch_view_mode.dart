@@ -1,0 +1,1 @@
+enum LaunchViewMode { list, grid }

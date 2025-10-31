@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:space_x/core/utils/date_formatter.dart';
 import 'package:space_x/features/favorites/presentation/cubit/favorites_cubit.dart';
 import 'package:space_x/features/launches/model/launch_model.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -18,7 +19,7 @@ class LaunchDetailPage extends StatelessWidget {
         actions: [
           BlocBuilder<FavoritesCubit, FavoritesState>(
             builder: (context, state) {
-              final isFavorite = state.favoriteIds.contains(launch.id);
+              final isFavorite = state is FavoritesSuccess && state.favoriteIds.contains(launch.id);
               return IconButton(
                 icon: Icon(
                   isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -53,12 +54,11 @@ class LaunchDetailPage extends StatelessWidget {
             const SizedBox(height: 16),
             Text('Date', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            Text(launch.dateUtc.toLocal().toString()),
+            Text(DateFormatter.formatLaunchDate(launch.dateUtc)),
             const SizedBox(height: 16),
             Text('Mission Outcome', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            if (launch.success != null)
-              Text(launch.success! ? 'Success' : 'Failure'),
+            _buildMissionOutcome(),
             if (launch.failures != null && launch.failures!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
@@ -109,6 +109,16 @@ class LaunchDetailPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildMissionOutcome() {
+    if (launch.success == null) {
+      return const Text('To be determined');
+    } else if (launch.success!) {
+      return const Text('Success', style: TextStyle(color: Colors.green));
+    } else {
+      return const Text('Failure', style: TextStyle(color: Colors.red));
+    }
   }
 
   Future<void> _launchUrl(String url) async {

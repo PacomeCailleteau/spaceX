@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:space_x/features/settings/presentation/cubit/theme_cubit.dart';
+import 'package:space_x/features/settings/presentation/widgets/theme_radio_tile.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -27,24 +28,9 @@ class SettingsPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  RadioListTile<ThemeMode>(
-                    title: const Text('System'),
-                    value: ThemeMode.system,
-                    groupValue: state.themeMode,
-                    onChanged: (value) => context.read<ThemeCubit>().setTheme(value!),
-                  ),
-                  RadioListTile<ThemeMode>(
-                    title: const Text('Light'),
-                    value: ThemeMode.light,
-                    groupValue: state.themeMode,
-                    onChanged: (value) => context.read<ThemeCubit>().setTheme(value!),
-                  ),
-                  RadioListTile<ThemeMode>(
-                    title: const Text('Dark'),
-                    value: ThemeMode.dark,
-                    groupValue: state.themeMode,
-                    onChanged: (value) => context.read<ThemeCubit>().setTheme(value!),
-                  ),
+                  ThemeRadioTile(title: 'System', value: ThemeMode.system, groupValue: state.themeMode),
+                  ThemeRadioTile(title: 'Light', value: ThemeMode.light, groupValue: state.themeMode),
+                  ThemeRadioTile(title: 'Dark', value: ThemeMode.dark, groupValue: state.themeMode),
                 ],
               );
             },

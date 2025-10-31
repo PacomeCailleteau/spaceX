@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:space_x/features/favorites/presentation/pages/favorites_page.dart';
 import 'package:space_x/features/launches/model/launch_model.dart';
 import 'package:space_x/features/launches/presentation/cubit/launches_cubit.dart';
+import 'package:space_x/features/launches/presentation/cubit/view_mode_cubit.dart';
+import 'package:space_x/features/launches/enum/launch_view_mode.dart';
 import 'package:space_x/features/launches/presentation/pages/launch_detail_page.dart';
 import 'package:space_x/features/launches/presentation/widgets/launch_grid_item.dart';
 import 'package:space_x/features/launches/presentation/widgets/launch_list_item.dart';
-import 'package:space_x/features/settings/presentation/pages/settings_page.dart';
+import 'package:space_x/features/launches/presentation/widgets/options_menu.dart';
 
 class LaunchesPage extends StatefulWidget {
   const LaunchesPage({super.key});
@@ -18,6 +19,7 @@ class LaunchesPage extends StatefulWidget {
 class _LaunchesPageState extends State<LaunchesPage> {
   final _scrollController = ScrollController();
   final _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -47,25 +49,21 @@ class _LaunchesPageState extends State<LaunchesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LaunchesCubit, LaunchesState>(
-      builder: (context, state) {
-        return Scaffold(
-          appBar: _buildAppBar(state),
-          body: _buildBody(state),
-          floatingActionButton: state.isSearching
-              ? null
-              : FloatingActionButton(
-                  child: const Icon(Icons.more_vert),
-                  onPressed: () => _showOptionsModal(context),
-                ),
-        );
-      },
+    return Scaffold(
+      appBar: _buildAppBar(),
+      body: _buildBody(),
+      floatingActionButton: _isSearching
+          ? null
+          : FloatingActionButton(
+              child: const Icon(Icons.more_vert),
+              onPressed: () => _showOptionsModal(context),
+            ),
     );
   }
 
-  AppBar _buildAppBar(LaunchesState state) {
+  AppBar _buildAppBar() {
     return AppBar(
-      title: !state.isSearching
+      title: !_isSearching
           ? GestureDetector(
               onTap: () => _refreshIndicatorKey.currentState?.show(),
               child: const Text('SpaceX Launches'),
@@ -73,16 +71,18 @@ class _LaunchesPageState extends State<LaunchesPage> {
           : TextField(
               autofocus: true,
               style: Theme.of(context).appBarTheme.titleTextStyle,
-              decoration: InputDecoration(
-                hintText: 'Search by name...',
-                border: InputBorder.none,
-              ),
+              decoration: const InputDecoration(hintText: 'Search by name...', border: InputBorder.none),
               onSubmitted: (query) => context.read<LaunchesCubit>().search(query),
             ),
       actions: [
         IconButton(
-          icon: Icon(state.isSearching ? Icons.close : Icons.search),
-          onPressed: () => context.read<LaunchesCubit>().toggleSearch(),
+          icon: Icon(_isSearching ? Icons.close : Icons.search),
+          onPressed: () {
+            setState(() => _isSearching = !_isSearching);
+            if (!_isSearching) {
+              context.read<LaunchesCubit>().refresh();
+            }
+          },
         ),
       ],
     );
@@ -91,60 +91,53 @@ class _LaunchesPageState extends State<LaunchesPage> {
   void _showOptionsModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (_) => BlocProvider.value(
-        value: BlocProvider.of<LaunchesCubit>(context),
+      // Provide both cubits to the modal sheet
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: BlocProvider.of<ViewModeCubit>(context)),
+          BlocProvider.value(value: BlocProvider.of<LaunchesCubit>(context)),
+        ],
         child: const OptionsMenu(),
       ),
     );
   }
 
-  Widget _buildBody(LaunchesState state) {
-    final status = state.status;
-    final launches = state.launches;
-
-    if (status == LaunchStatus.loading && launches.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (status == LaunchStatus.failure && launches.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(state.error ?? 'Failed to fetch launches'),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: () => context.read<LaunchesCubit>().refresh(), child: const Text('Retry'))
-          ],
-        ),
-      );
-    }
-
-    return BlocListener<LaunchesCubit, LaunchesState>(
-      listener: (context, listenState) {
-        if (listenState.status == LaunchStatus.failure && listenState.launches.isNotEmpty) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(content: Text(listenState.error ?? 'Failed to load more launches.')),
-            );
-        }
-      },
-      child: RefreshIndicator(
-        key: _refreshIndicatorKey,
-        onRefresh: () => context.read<LaunchesCubit>().refresh(),
-        child: (launches.isEmpty && status != LaunchStatus.loading)
-            ? LayoutBuilder(builder: (context, constraints) {
-                return SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                    child: const Center(child: Text('No launches found.')),
-                  ),
-                );
-              })
-            : state.viewMode == LaunchViewMode.list
-                ? _buildListView(launches, status == LaunchStatus.loadingMore)
-                : _buildGridView(launches, status == LaunchStatus.loadingMore),
+  Widget _buildBody() {
+    return RefreshIndicator(
+      key: _refreshIndicatorKey,
+      onRefresh: () => context.read<LaunchesCubit>().refresh(),
+      child: BlocBuilder<LaunchesCubit, LaunchesState>(
+        builder: (context, state) {
+          return switch (state) {
+            LaunchesInitial() || LaunchesLoading() => const Center(child: CircularProgressIndicator()),
+            LaunchesFailure(error: final error, launches: final launches) when launches.isEmpty => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(error),
+                    const SizedBox(height: 16),
+                    ElevatedButton(onPressed: () => context.read<LaunchesCubit>().refresh(), child: const Text('Retry'))
+                  ],
+                ),
+              ),
+            LaunchesSuccess(launches: final launches) || LaunchesLoadingMore(launches: final launches) || LaunchesFailure(launches: final launches) =>
+              (launches.isEmpty)
+                  ? LayoutBuilder(builder: (context, constraints) => SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                          child: const Center(child: Text('No launches found.')),
+                        ),
+                      ))
+                  : BlocBuilder<ViewModeCubit, ViewModeState>(
+                      builder: (context, viewModeState) {
+                        return viewModeState.viewMode == LaunchViewMode.list
+                            ? _buildListView(launches, state is LaunchesLoadingMore)
+                            : _buildGridView(launches, state is LaunchesLoadingMore);
+                      },
+                    ),
+          };
+        },
       ),
     );
   }
@@ -172,52 +165,11 @@ class _LaunchesPageState extends State<LaunchesPage> {
       itemCount: launches.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
         if (index >= launches.length) {
-          // For GridView, a simple centered loader is fine, it will take one grid cell.
           return const Center(child: CircularProgressIndicator());
         }
         return GestureDetector(
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => LaunchDetailPage(launch: launches[index]))),
           child: LaunchGridItem(launch: launches[index]),
-        );
-      },
-    );
-  }
-}
-
-class OptionsMenu extends StatelessWidget {
-  const OptionsMenu({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<LaunchesCubit, LaunchesState>(
-      builder: (context, state) {
-        return Wrap(
-          children: <Widget>[
-            ListTile(
-              leading: Icon(state.viewMode == LaunchViewMode.list ? Icons.grid_view : Icons.view_list),
-              title: Text(state.viewMode == LaunchViewMode.list ? 'Grid View' : 'List View'),
-              onTap: () {
-                context.read<LaunchesCubit>().toggleViewMode();
-                Navigator.of(context).pop();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.favorite),
-              title: const Text('Favorites'),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FavoritesPage()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsPage()));
-              },
-            ),
-          ],
         );
       },
     );
