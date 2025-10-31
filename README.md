@@ -50,7 +50,7 @@ This project was built with a strong emphasis on clean, scalable, and maintainab
 
 1.  **Clone the repository:**
     ```sh
-    git clone <your-repository-url>
+    git clone https://github.com/PacomeCailleteau/spaceX
     cd space_x
     ```
 
